@@ -7,16 +7,19 @@ const AppLayout = () => {
   const navigation = useNavigation();
   const isLoading = navigation.state === 'loading';
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <div className="grid h-screen grid-rows-[auto_1fr_auto] bg-gray-100">
-      <Header />
-      <main className="mx-auto max-w-3xl overflow-auto">
-        <Outlet />
-      </main>
-      <CartOverview></CartOverview>
-    </div>
+  return (
+    <>
+      <div className="grid h-screen grid-rows-[auto_1fr_auto] bg-gray-100">
+        <Header isLoading={isLoading} />
+        <main className="relative min-h-0">
+          {isLoading && <Loader />}
+          <div className="h-full overflow-auto p-2">
+            <Outlet />
+          </div>
+        </main>
+        <CartOverview isLoading={isLoading}></CartOverview>
+      </div>
+    </>
   );
 };
 

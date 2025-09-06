@@ -1,12 +1,14 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState } from 'react';
-import { Form, useActionData, useNavigation } from 'react-router-dom';
+import { Form, useActionData, useNavigation, redirect } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
-  /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(str);
+  /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(
+    str,
+  );
 
 const fakeCart = [
   {
@@ -44,33 +46,38 @@ function CreateOrder() {
 
   const formErrors = useActionData();
 
+  const controlDivCss =
+    'grid grid-cols-[120px_1fr] items-center md:items-start gap-x-2 pb-2 md:grid-cols-[120px_250px]';
+
   return (
     <div className="flex flex-wrap p-2">
       <div className="w-full">
-        <h2>Ready to order? Let's go!</h2>
+        <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
       </div>
 
-      <Form method="POST" className="w-full">
-        <div className="pb-2">
-          <label>First Name</label>
+      <Form method="POST" className="w-full md:w-1/2 lg:w-1/3">
+        <div className={controlDivCss}>
+          <label className="flex items-center">First Name</label>
           <input className="input-text" type="text" name="customer" required />
         </div>
-
-        <div className="pb-2">
-          <label>Phone number</label>
-          <div>
+        <div className={controlDivCss}>
+          <label className="flex items-center">Phone number</label>
+          <div className="w-full">
             <input className="input-text" type="tel" name="phone" required />
-            {formErrors?.phone ? <p>{formErrors?.phone}</p> : ''}
+            {formErrors?.phone ? (
+              <p className="pl-2 text-sm font-semibold text-red-600">
+                {formErrors?.phone}
+              </p>
+            ) : (
+              ''
+            )}
           </div>
         </div>
-
-        <div className="pb-2">
-          <label>Address</label>
-          <div>
-            <input className="input-text" type="text" name="address" required />
-          </div>
-          <input type="hidden" name="cart" value={JSON.stringify(cart)}></input>
+        <div className={controlDivCss}>
+          <label className="flex items-center">Address</label>
+          <input className="input-text" type="text" name="address" required />
         </div>
+        <input type="hidden" name="cart" value={JSON.stringify(cart)}></input>
 
         <div className="flex pb-2">
           <input
@@ -87,7 +94,9 @@ function CreateOrder() {
         </div>
 
         <div>
-          <Button disabled={isSubmitting}>{isSubmitting ? 'Submitting' : 'Order now'}</Button>
+          <Button disabled={isSubmitting} type="primary">
+            {isSubmitting ? 'Submitting' : 'Order now'}
+          </Button>
         </div>
       </Form>
     </div>
@@ -112,8 +121,7 @@ export const action = async ({ request }) => {
 
   if (Object.keys(errors).length > 0) return errors;
 
-  // return redirect(`/order/${newOrder.id}`);
-  return null;
+  return redirect(`/order/${newOrder.id}`);
 };
 
 export default CreateOrder;

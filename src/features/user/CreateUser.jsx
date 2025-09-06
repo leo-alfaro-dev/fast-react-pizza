@@ -27,7 +27,7 @@ function CreateUser() {
         </div>
         {username !== '' && (
           <div className="flex w-full justify-center">
-            <Button>Start ordering</Button>
+            <Button type="primary">Start ordering</Button>
           </div>
         )}
       </div>
