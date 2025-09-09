@@ -1,8 +1,12 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Form, useActionData, useNavigation, redirect } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
+import { clearCart, getCart } from '../cart/CartSlice.js';
+import EmptyCart from '../cart/EmptyCart';
+import store from '../../store.js';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -10,36 +14,14 @@ const isValidPhone = (str) =>
     str,
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: 'Mediterranean',
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: 'Vegetale',
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: 'Spinach and Mushroom',
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
-
 function CreateOrder() {
   // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
-  cart;
-  isValidPhone;
-  useState;
+  const currentUserName = useSelector((state) => {
+    return state.user.username;
+  });
+  const [name, setName] = useState(currentUserName);
+
+  const cart = useSelector(getCart);
 
   const navigation = useNavigation();
   const isSubmitting = navigation.state == 'submitting';
@@ -49,7 +31,7 @@ function CreateOrder() {
   const controlDivCss =
     'grid grid-cols-[120px_1fr] items-center md:items-start gap-x-2 pb-2 md:grid-cols-[120px_250px]';
 
-  return (
+  return cart && cart.length > 0 ? (
     <div className="flex flex-wrap p-2">
       <div className="w-full">
         <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
@@ -57,8 +39,15 @@ function CreateOrder() {
 
       <Form method="POST" className="w-full md:w-1/2 lg:w-1/3">
         <div className={controlDivCss}>
-          <label className="flex items-center">First Name</label>
-          <input className="input-text" type="text" name="customer" required />
+          <label className="flex items-center">Name</label>
+          <input
+            className="input-text"
+            type="text"
+            name="customer"
+            value={name}
+            onChange={(e) => setName(e.value)}
+            required
+          />
         </div>
         <div className={controlDivCss}>
           <label className="flex items-center">Phone number</label>
@@ -100,13 +89,14 @@ function CreateOrder() {
         </div>
       </Form>
     </div>
+  ) : (
+    <EmptyCart></EmptyCart>
   );
 }
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
-  console.log(data);
 
   const order = {
     ...data,
@@ -118,6 +108,9 @@ export const action = async ({ request }) => {
 
   const errors = {};
   if (!isValidPhone(order.phone)) errors.phone = 'Incorrect phone';
+
+  //Do NOT overuse
+  store.dispatch(clearCart());
 
   if (Object.keys(errors).length > 0) return errors;
 

@@ -1,8 +1,9 @@
 import { formatCurrency } from '../../utils/helpers';
 import PropTypes from 'prop-types';
-import Button from '../../ui/Button';
+import DeleteItemButton from './DeleteItemButton';
+import UpdateItemQuantity from './UpdateItemQuantity';
 
-function CartItem({ item }) {
+const CartItem = ({ item }) => {
   const { pizzaId, name, quantity, totalPrice } = item;
 
   return (
@@ -11,10 +12,13 @@ function CartItem({ item }) {
         {quantity}&times; {name}
       </p>
       <p>{formatCurrency(totalPrice)}</p>
-      <Button type="small">X</Button>
+      <div className="flex">
+        <UpdateItemQuantity pizzaId={pizzaId} quantity={quantity} />
+        <DeleteItemButton pizzaId={pizzaId} />
+      </div>
     </div>
   );
-}
+};
 
 CartItem.propTypes = {
   item: PropTypes.shape({
