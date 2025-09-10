@@ -1,12 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Form, useActionData, useNavigation, redirect } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
 import { clearCart, getCart } from '../cart/CartSlice.js';
 import EmptyCart from '../cart/EmptyCart';
 import store from '../../store.js';
+import { fetchAddress } from '../user/userSlice';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -20,22 +21,31 @@ function CreateOrder() {
     return state.user.username;
   });
   const [name, setName] = useState(currentUserName);
-
-  const cart = useSelector(getCart);
-
+  const dispatch = useDispatch();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state == 'submitting';
 
   const formErrors = useActionData();
+  const cart = useSelector(getCart);
+
+  const isSubmitting = navigation.state == 'submitting';
+
+  const {
+    username,
+    status: addressStatus,
+    position,
+    positionAddress,
+  } = useSelector((state) => {
+    return state.user;
+  });
+
+  const isLoadingAddress = addressStatus === 'loading';
 
   const controlDivCss =
     'grid grid-cols-[120px_1fr] items-center md:items-start gap-x-2 pb-2 md:grid-cols-[120px_250px]';
 
   return cart && cart.length > 0 ? (
     <div className="flex flex-wrap p-2">
-      <div className="w-full">
-        <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
-      </div>
+      <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
 
       <Form method="POST" className="w-full md:w-1/2 lg:w-1/3">
         <div className={controlDivCss}>
@@ -64,10 +74,31 @@ function CreateOrder() {
         </div>
         <div className={controlDivCss}>
           <label className="flex items-center">Address</label>
-          <input className="input-text" type="text" name="address" required />
+          <div className="relative flex">
+            <input
+              className="input-text"
+              type="text"
+              name="address"
+              required
+              disabled={isLoadingAddress}
+              defaultValue={positionAddress}
+            />
+            {!position.latitude && !position.longitude && (
+              <span className="absolute right-7 pt-0.5">
+                <Button
+                  type="small"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    dispatch(fetchAddress());
+                  }}
+                >
+                  Get Position
+                </Button>
+              </span>
+            )}
+          </div>
         </div>
         <input type="hidden" name="cart" value={JSON.stringify(cart)}></input>
-
         <div className="flex pb-2">
           <input
             className="mr-2 h-6 w-6 accent-yellow-400"
@@ -82,7 +113,7 @@ function CreateOrder() {
           </label>
         </div>
 
-        <div>
+        <div className="text-right">
           <Button disabled={isSubmitting} type="primary">
             {isSubmitting ? 'Submitting' : 'Order now'}
           </Button>

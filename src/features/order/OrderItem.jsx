@@ -1,17 +1,18 @@
 import { formatCurrency } from '../../utils/helpers';
 import PropTypes from 'prop-types';
 
-function OrderItem({ item, isLoadingIngredients, ingredients }) {
+function OrderItem({ item, ingredients = [] }) {
   const { quantity, name, totalPrice } = item;
 
   return (
-    <li>
-      <div className="text-10 flex justify-between py-1 font-semibold">
+    <li className="py-1">
+      <div className="text-10 flex justify-between font-semibold">
         <p>
           {quantity} {name}
         </p>
         <p>{formatCurrency(totalPrice)}</p>
       </div>
+      <span className="text-xs capitalize italic">{ingredients.join(', ')}</span>
     </li>
   );
 }

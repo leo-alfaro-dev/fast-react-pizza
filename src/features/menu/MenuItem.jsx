@@ -19,7 +19,6 @@ function MenuItem({ pizza }) {
       totalPrice: unitPrice,
     };
 
-    console.log(newItem);
     dispatch(addItem(newItem));
   };
 
